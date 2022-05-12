@@ -17,6 +17,8 @@ private:
 		HINSTANCE hInstance;
 		std::wstring ClassName{ L"Hello Window Class" };
 	};
+
+
 	static std::unique_ptr<WindowClass> m_WindowClass;
 	static bool m_CursorState;
 	HWND hwnd;
