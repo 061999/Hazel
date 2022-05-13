@@ -239,6 +239,8 @@
 #include <Windows.h>
 #include <iostream>
 #include <vector>
+#include <d3d11.h>
+#pragma comment(lib,"d3d11.lib")
 
 struct Window
 {
@@ -249,6 +251,7 @@ struct Window
 	bool isClose;
 	std::vector<std::function<void( unsigned char )>> fn_keycallbacks;
 	std::vector<std::function<void( float , float )>> fn_mousecallback;
+	std::vector<std::function<void( std::vector<char[128]> & paths )>> Fn_DropFile;
 	void HandMessage( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam )
 	{
 		switch( msg )
@@ -286,6 +289,21 @@ struct Window
 
 				break;
 			}
+			case WM_DROPFILES:
+				HDROP hDrop = reinterpret_cast<HDROP>(wParam);
+				UINT count = DragQueryFileA( hDrop , -1 , nullptr , 0u );
+				std::vector<char[128]> filepaths( count );
+				for( UINT i = 0; i < count; i++ )
+				{
+					DragQueryFileA( hDrop , i , filepaths[i] , 128u );
+				}
+				DragFinish( hDrop );
+				for( auto & e : Fn_DropFile )
+				{
+					e( filepaths );
+				}
+				break;
+
 		}
 	}
 };
@@ -398,4 +416,81 @@ HAZEL_API void HazelPushKeyDownCallBack( Window * window , const std::function<v
 HAZEL_API void HazelPushMouseDeltaCallBack( Window * window , const std::function<void( float , float ) > & fn_back )
 { 
 	window->fn_mousecallback.push_back( fn_back );
+}
+
+struct Graphics
+{
+	ID3D11Device * device;
+	ID3D11DeviceContext * context;
+	IDXGISwapChain * swapchain;
+	ID3D11RenderTargetView * RTV;
+};
+
+struct SWAP_CHAIN_DESC_EXTENSION : public DXGI_SWAP_CHAIN_DESC
+{
+	SWAP_CHAIN_DESC_EXTENSION( HWND win , int width , int height )
+	{
+		DXGI_MODE_DESC mode_desc = {};
+
+		mode_desc.Width = width;
+		mode_desc.Height = height;
+		mode_desc.RefreshRate = { 0u,0u };
+		mode_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		mode_desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		mode_desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+		BufferDesc = mode_desc;
+		SampleDesc = { 4u,0u };
+		BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		BufferCount = 1u;
+		OutputWindow = win;
+		Windowed = TRUE;
+		SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		Flags = 0u;
+	}
+};
+
+
+HAZEL_API Graphics * HazelMakeGraphics( Window * window )
+{
+	Graphics * graphics = new Graphics;
+	SWAP_CHAIN_DESC_EXTENSION swapchain_desc( window->hwnd , window->width , window->height );
+	D3D11CreateDeviceAndSwapChain( nullptr ,
+								   D3D_DRIVER_TYPE_HARDWARE ,
+								   nullptr ,
+								   0u ,
+								   nullptr ,
+								   0u ,
+								   D3D11_SDK_VERSION ,
+								   &swapchain_desc ,
+								   &graphics->swapchain ,
+								   &graphics->device ,
+								   nullptr ,
+								   &graphics->context
+	);
+
+	ID3D11Resource * buffer;
+	graphics->swapchain->GetBuffer( 0u , IID_PPV_ARGS( &buffer ) );
+	graphics->device->CreateRenderTargetView( buffer , nullptr , &graphics->RTV );
+	buffer->Release();
+
+	graphics->context->OMSetRenderTargets( 1u , &graphics->RTV , nullptr );
+
+	return graphics;
+}
+
+HAZEL_API void HazelPushDropFileCallBack( Window * window , const std::function<void( std::vector<char[128]> & paths )> & fn_back )
+{
+	window->Fn_DropFile.push_back( fn_back );
+}
+
+HAZEL_API void HazelSwapBuffer( Graphics * gfx )
+{
+	gfx->swapchain->Present( 0u , 0u );
+}
+
+
+HAZEL_API void HazelClearColor( Graphics * gfx , const float ColorRGBA[4] )
+{
+	gfx->context->ClearRenderTargetView( gfx->RTV , ColorRGBA );
 }
