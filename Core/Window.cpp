@@ -237,17 +237,63 @@
 
 #include "Hazel_API.h"
 #include <Windows.h>
+#include <iostream>
+#include <vector>
 
 struct Window
 {
 	HWND hwnd;
 	int width;
 	int height;
+	bool cursorState;
+	bool isClose;
+	std::vector<std::function<void( unsigned char )>> fn_keycallbacks;
+	std::vector<std::function<void( float , float )>> fn_mousecallback;
+	void HandMessage( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam )
+	{
+		switch( msg )
+		{
+			case WM_CLOSE:
+			{
+				isClose = true;
+				break;
+			}
+			case WM_KEYDOWN:
+			{
+				for( size_t i = 0; i < fn_keycallbacks.size(); i++ )
+				{
+					fn_keycallbacks[i]( static_cast<unsigned char>(wParam) );
+				}
+				break;
+			}
+			case WM_INPUT:
+			{
+				if( cursorState )
+				{
+					break;
+				}
+				static unsigned int mouseRawDataSize = 1024u;
+				static char * mouseRawData = new char[mouseRawDataSize];
+				GetRawInputData( (HRAWINPUT)lParam , RID_INPUT , mouseRawData , &mouseRawDataSize , sizeof( RAWINPUTHEADER ) );
+				RAWINPUT * data = (RAWINPUT *)mouseRawData;
+				if( data->header.dwType == RIM_TYPEMOUSE && (data->data.mouse.lLastX != 0l || data->data.mouse.lLastY != 0l) )
+				{
+					for( auto & e : fn_mousecallback )
+					{
+						e( (float)data->data.mouse.lLastX , (float)data->data.mouse.lLastY );
+					}
+				}
+
+				break;
+			}
+		}
+	}
 };
 
 static LRESULT ProcMessage( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam )
 {
 	Window * win = (Window *)GetWindowLongPtr( hWnd , GWLP_USERDATA );
+	win->HandMessage( hWnd , msg , wParam , lParam );
 	return DefWindowProc( hWnd , msg , wParam , lParam );
 }
 
@@ -293,10 +339,15 @@ HAZEL_API Window * HazelCreateWindow( int width , int height , const char * titl
 	Window * window = new Window;
 	window->width = width;
 	window->height = height;
-	window->hwnd = CreateWindowExA( 0 ,
+	window->cursorState = true;
+	window->isClose = false;
+	RECT wr{ 0l,0l,width,height };
+	AdjustWindowRect( &wr , WS_CAPTION , FALSE );
+	window->hwnd = CreateWindowExA( WS_EX_ACCEPTFILES ,
 									window_desc.lpszClassName ,
-									"Hello" , 0 ,
-									0 , 0 , width , height ,
+									"H e l l o" , WS_CAPTION | WS_SYSMENU ,
+									CW_USEDEFAULT , CW_USEDEFAULT,
+									wr.right - wr.left , wr.bottom - wr.top ,
 									nullptr , nullptr ,
 									GetModuleHandleA( nullptr ) ,
 									window
@@ -313,6 +364,11 @@ HAZEL_API Window * HazelCreateWindow( int width , int height , const char * titl
 	RegisterRawInputDevices( &rid , 1 , sizeof( rid ) );
 
 	return window;
+}
+
+HAZEL_API bool HazelWindowIsClose( Window * window )
+{
+	return window->isClose;
 }
 
 HAZEL_API void HazelHandleEvent()
@@ -332,4 +388,14 @@ HAZEL_API int HazelGetWindowWidth( Window * window )
 HAZEL_API int HazelGetWindowHeight( Window * window )
 {
 	return window->height;
+}
+
+HAZEL_API void HazelPushKeyDownCallBack( Window * window , const std::function<void( unsigned char )> & fn_back )
+{
+	window->fn_keycallbacks.push_back( fn_back );
+}
+
+HAZEL_API void HazelPushMouseDeltaCallBack( Window * window , const std::function<void( float , float ) > & fn_back )
+{ 
+	window->fn_mousecallback.push_back( fn_back );
 }

@@ -109,3 +109,87 @@
 //{
 //    context->OMSetRenderTargets( 1u , RTV.GetAddressOf() , DSV.Get() );
 //}
+
+#include "Hazel_API.h"
+#include <d3d11.h>
+#include <iostream>
+#pragma comment(lib,"d3d11.lib")
+
+struct Window
+{
+    HWND hwnd;
+    int width;
+    int height;
+};
+
+struct Graphics
+{
+	ID3D11Device * device;
+	ID3D11DeviceContext * context;
+	IDXGISwapChain * swapchain;
+    ID3D11RenderTargetView * RTV;
+};
+
+struct SWAP_CHAIN_DESC_EXTENSION : public DXGI_SWAP_CHAIN_DESC
+{
+    SWAP_CHAIN_DESC_EXTENSION( HWND win , int width , int height )
+    {
+        DXGI_MODE_DESC mode_desc = {};
+
+        mode_desc.Width = width;
+        mode_desc.Height = height;
+        mode_desc.RefreshRate = { 0u,0u };
+        mode_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        mode_desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+        mode_desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+        BufferDesc = mode_desc;
+        SampleDesc = { 4u,0u };
+        BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        BufferCount = 1u;
+        OutputWindow = win;
+        Windowed = TRUE;
+        SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        Flags = 0u;
+    }
+};
+
+
+HAZEL_API Graphics * HazelMakeGraphics( Window * window )
+{
+	Graphics * graphics = new Graphics;
+    SWAP_CHAIN_DESC_EXTENSION swapchain_desc( window->hwnd , window->width , window->height );
+    D3D11CreateDeviceAndSwapChain( nullptr ,
+                                   D3D_DRIVER_TYPE_HARDWARE ,
+                                   nullptr ,
+                                   0u ,
+                                   nullptr ,
+                                   0u ,
+                                   D3D11_SDK_VERSION ,
+                                   &swapchain_desc ,
+                                   &graphics->swapchain ,
+                                   &graphics->device ,
+                                   nullptr ,
+                                   &graphics->context
+    );
+
+    ID3D11Resource* buffer;
+    graphics->swapchain->GetBuffer( 0u , IID_PPV_ARGS( &buffer ) );
+    graphics->device->CreateRenderTargetView( buffer , nullptr , &graphics->RTV );
+    buffer->Release();
+
+    graphics->context->OMSetRenderTargets( 1u , &graphics->RTV , nullptr );
+
+    return graphics;
+}
+
+HAZEL_API void HazelSwapBuffer( Graphics * gfx )
+{ 
+    gfx->swapchain->Present( 0u , 0u );
+}
+
+
+HAZEL_API void HazelClearColor( Graphics * gfx , const float ColorRGBA[4] )
+{
+    gfx->context->ClearRenderTargetView( gfx->RTV , ColorRGBA );
+}

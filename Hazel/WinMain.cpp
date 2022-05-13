@@ -1,13 +1,16 @@
 #include "../Core/Hazel_API.h"
-#include <iostream>
+#include <DirectXColors.h>
 
 int main()
 {
 	Window * win = HazelCreateWindow( 800 , 800 , "Hello" );
-	std::cout << HazelGetWindowHeight( win );
-	while( true )
+	Graphics * gfx = HazelMakeGraphics( win );
+	
+	while( !HazelWindowIsClose( win ) )
 	{
 		HazelHandleEvent();
+		HazelClearColor( gfx , DirectX::Colors::Aquamarine );
+		HazelSwapBuffer( gfx );
 	}
 	return 0;
 }
