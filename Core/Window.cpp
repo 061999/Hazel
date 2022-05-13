@@ -68,7 +68,7 @@ Window::WindowClass::~WindowClass()
 	UnregisterClass( ClassName.c_str() , hInstance );
 }
 
-void Window::HandMsg( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam )
+void Window::HandMsg( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam ) noexcept
 {
 	switch( msg )
 	{

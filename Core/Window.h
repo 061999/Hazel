@@ -31,7 +31,7 @@ private:
 	vector<std::function<void( vector<char[128]> & )>> Fn_DropFile;
 	vector<std::function<void( int , int )>> Fn_Resize;
 private:
-	void HandMsg( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam );
+	void HandMsg( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam ) noexcept;
 	friend LRESULT ProcMessage( HWND hWnd , UINT msg , WPARAM wParam , LPARAM lParam );
 public:
 	static bool m_WindowState;
