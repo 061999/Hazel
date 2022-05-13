@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Hazel_API.h"
 #include "Hazel_PCH.h"
 class HAZEL_API Window
 {

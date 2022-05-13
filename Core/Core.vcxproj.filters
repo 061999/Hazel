@@ -21,12 +21,24 @@
     <ClInclude Include="Window.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel_API.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CORE.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Hazel_PCH.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
