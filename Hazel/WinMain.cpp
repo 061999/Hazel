@@ -6,6 +6,7 @@ int main()
 	while( Window::m_WindowState )
 	{
 		gfx.Clear();
+		gfx.SetRenderTarget();
 		gfx.Swap();
 		Window::EventPoll();
 	}

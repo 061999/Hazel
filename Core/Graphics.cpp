@@ -81,8 +81,6 @@ Graphics::Graphics( Window & win )
     device->CreateTexture2D( &depth_desc , nullptr , depthBuffer.GetAddressOf() );
     device->CreateDepthStencilView( depthBuffer.Get() , nullptr , DSV.GetAddressOf() );
 
-
-    context->OMSetRenderTargets( 1u , RTV.GetAddressOf() , DSV.Get() );
     VIEW_PORT_EXTENSION viewport( (float)win.GetWidth() , (float)win.GetHeight() );
     context->RSSetViewports( 1u , &viewport );
 }
