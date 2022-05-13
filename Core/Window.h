@@ -3,7 +3,7 @@
 class HAZEL_API Window
 {
 private: 
-	class WindowClass
+	class HAZEL_API WindowClass
 	{
 	public:
 		WindowClass();
