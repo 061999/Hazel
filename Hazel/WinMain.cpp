@@ -1,14 +1,13 @@
-#include "../Core/CORE.h"
+#include "../Core/Hazel_API.h"
+#include <iostream>
+
 int main()
 {
-	Window win( 900 , 900 );
-	Graphics gfx( win );
-	while( Window::m_WindowState )
+	Window * win = HazelCreateWindow( 800 , 800 , "Hello" );
+	std::cout << HazelGetWindowHeight( win );
+	while( true )
 	{
-		gfx.Clear();
-		gfx.SetRenderTarget();
-		gfx.Swap();
-		Window::EventPoll();
+		HazelHandleEvent();
 	}
 	return 0;
 }
