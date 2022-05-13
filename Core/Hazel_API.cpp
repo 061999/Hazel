@@ -249,6 +249,7 @@ struct Window
 	int height;
 	bool cursorState;
 	bool isClose;
+	bool keyboradState[256] = { false };
 	std::vector<std::function<void( unsigned char )>> fn_keycallbacks;
 	std::vector<std::function<void( float , float )>> fn_mousecallback;
 	std::vector<std::function<void( std::vector<char[128]> & paths )>> Fn_DropFile;
@@ -263,10 +264,19 @@ struct Window
 			}
 			case WM_KEYDOWN:
 			{
+				if( !(lParam & 0x40000000) )
+				{
+					keyboradState[wParam] = true;
+				}
 				for( size_t i = 0; i < fn_keycallbacks.size(); i++ )
 				{
 					fn_keycallbacks[i]( static_cast<unsigned char>(wParam) );
 				}
+				break;
+			}
+			case WM_KEYUP:
+			{
+				keyboradState[wParam] = false;
 				break;
 			}
 			case WM_INPUT:
@@ -363,7 +373,7 @@ HAZEL_API Window * HazelCreateWindow( int width , int height , const char * titl
 	AdjustWindowRect( &wr , WS_CAPTION , FALSE );
 	window->hwnd = CreateWindowExA( WS_EX_ACCEPTFILES ,
 									window_desc.lpszClassName ,
-									"H e l l o" , WS_CAPTION | WS_SYSMENU ,
+									title , WS_CAPTION | WS_SYSMENU ,
 									CW_USEDEFAULT , CW_USEDEFAULT,
 									wr.right - wr.left , wr.bottom - wr.top ,
 									nullptr , nullptr ,
@@ -487,6 +497,11 @@ HAZEL_API void HazelPushDropFileCallBack( Window * window , const std::function<
 HAZEL_API void HazelSwapBuffer( Graphics * gfx )
 {
 	gfx->swapchain->Present( 0u , 0u );
+}
+
+HAZEL_API bool HazelIsKeyDown( Window * window , const unsigned char & code )
+{
+	return window->keyboradState[code];
 }
 
 

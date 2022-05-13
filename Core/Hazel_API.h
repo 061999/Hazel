@@ -12,6 +12,8 @@ typedef struct Window Window;
 
 typedef struct Graphics Graphics;
 
+typedef struct Image Image;
+
 /// <summary>
 /// 创建一个窗口, 返回一个窗口句柄
 /// </summary>
@@ -87,9 +89,20 @@ HAZEL_API void HazelPushDropFileCallBack( Window * window , const std::function<
 HAZEL_API void HazelSwapBuffer( Graphics * gfx );
 
 /// <summary>
+/// 判断键盘是否按下
+/// </summary>
+/// <param name="window">Window句柄</param>
+/// <param name="code">被判断的键值</param>
+/// <returns>是否按下</returns>
+HAZEL_API bool HazelIsKeyDown( Window * window , const unsigned char & code );
+
+/// <summary>
 /// 清除
 /// </summary>
 /// <param name="gfx">Graphics句柄</param>
 /// <param name="ColorRGBA">颜色</param>
 /// <returns></returns>
 HAZEL_API void HazelClearColor( Graphics * gfx , const float ColorRGBA[4] );
+
+
+
