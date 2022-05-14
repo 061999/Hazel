@@ -10,9 +10,17 @@
 
 typedef struct Window Window;
 
-typedef struct Graphics Graphics;
+typedef struct Texture2D Texture2D;
 
-typedef struct Image Image;
+typedef struct VertexBuffer VertexBuffer;
+
+typedef struct IndexBuffer IndexBuffer;
+
+typedef struct InputLayout InputLayout;
+
+typedef struct ShaderVertex ShaderVertex;
+
+typedef struct ShaderPixel ShaderPixel;
 
 /// <summary>
 /// 创建一个窗口, 返回一个窗口句柄
@@ -23,12 +31,7 @@ typedef struct Image Image;
 /// <returns>窗口的句柄</returns>
 HAZEL_API Window * HazelCreateWindow( int width , int height , const char * title );
 
-/// <summary>
-/// 制造一个Graphics句柄
-/// </summary>
-/// <param name="window">Window句柄</param>
-/// <returns>Graphics句柄</returns>
-HAZEL_API Graphics * HazelMakeGraphics( Window * window );
+HAZEL_API void HazelMakeContext( Window * window );
 
 /// <summary>
 /// 窗口是否关闭
@@ -86,7 +89,7 @@ HAZEL_API void HazelPushDropFileCallBack( Window * window , const std::function<
 /// </summary>
 /// <param name="gfx">Graphics句柄</param>
 /// <returns></returns>
-HAZEL_API void HazelSwapBuffer( Graphics * gfx );
+HAZEL_API void HazelSwapBuffer();
 
 /// <summary>
 /// 判断键盘是否按下
@@ -96,13 +99,33 @@ HAZEL_API void HazelSwapBuffer( Graphics * gfx );
 /// <returns>是否按下</returns>
 HAZEL_API bool HazelIsKeyDown( Window * window , const unsigned char & code );
 
+HAZEL_API VertexBuffer * HazelCreateVertexBuffer( void * data , unsigned int stride , unsigned int count );
+
+HAZEL_API IndexBuffer * HazelCreateIndexBuffer( unsigned int * data , unsigned int count );
+
+HAZEL_API void HazelBindBuffer( VertexBuffer * vbo , IndexBuffer * ibo );
+
+HAZEL_API InputLayout * HazelCreateInputLayout();
+
+HAZEL_API void HazelAddInputElementDesc( InputLayout * layout , const char * name , int type , unsigned int count );
+
+HAZEL_API ShaderVertex * HazelCreateShaderVertex( const wchar_t * path , InputLayout * layout );
+
+HAZEL_API ShaderPixel * HazelCreateShaderPixel( const wchar_t * path );
+
+HAZEL_API void HazelBindShader( ShaderVertex * vs , ShaderPixel * ps );
+
+HAZEL_API Texture2D * HazelCreateTexture2D( const char * path , unsigned int slot = 0u );
+
+HAZEL_API void HazelBindTexture2D( Texture2D * pTexture );
+
 /// <summary>
 /// 清除
 /// </summary>
 /// <param name="gfx">Graphics句柄</param>
 /// <param name="ColorRGBA">颜色</param>
 /// <returns></returns>
-HAZEL_API void HazelClearColor( Graphics * gfx , const float ColorRGBA[4] );
+HAZEL_API void HazelClearColor( const float ColorRGBA[4] );
 
 
 

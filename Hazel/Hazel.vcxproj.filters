@@ -27,4 +27,8 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="ShaderSource\VS.hlsl" />
+    <FxCompile Include="ShaderSource\PS.hlsl" />
+  </ItemGroup>
 </Project>
